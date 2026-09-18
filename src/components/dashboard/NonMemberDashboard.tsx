@@ -29,12 +29,12 @@ export const NonMemberDashboard: React.FC = () => {
           
           <Link to="/" className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl bg-charcoal text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm">
-              <span className="font-serif italic font-normal text-base text-gold-400">D</span>
+              <span className="font-serif italic font-normal text-base text-gold-400">G</span>
               <span className="font-sans font-bold text-[11px] -ml-0.5 text-white">H</span>
             </div>
             <div className="flex flex-col">
               <span className="font-sans font-extrabold tracking-widest text-sm text-charcoal leading-none">
-                DIGITAL HEROES
+                GOLF-HERO
               </span>
               <span className="text-[10px] tracking-wider uppercase text-charcoal-muted mt-0.5 font-medium">
                 Account Portal
@@ -146,7 +146,7 @@ export const NonMemberDashboard: React.FC = () => {
               What You Unlock With Membership
             </h3>
             <p className="text-xs sm:text-sm text-charcoal-muted mt-1.5">
-              Digital Heroes combines golf performance, monthly number draws, and philanthropic contributions into a unified subscriber dashboard.
+              Golf-Hero combines golf performance, monthly number draws, and philanthropic contributions into a unified subscriber dashboard.
             </p>
           </div>
 
@@ -217,7 +217,7 @@ export const NonMemberDashboard: React.FC = () => {
 
       {/* Footer */}
       <footer className="border-t border-sand-200 bg-white/50 py-6 text-center text-xs text-charcoal-muted">
-        Digital Heroes — Non-Member Account Dashboard
+        Golf-Hero — Non-Member Account Dashboard
       </footer>
 
     </div>

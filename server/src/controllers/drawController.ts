@@ -87,6 +87,68 @@ export const getCurrentDraw = async (req: Request, res: Response): Promise<void>
       cycle.status === 'completed' ||
       new Date() > new Date(cycle.lockDate);
 
+    const totalParticipants = await LuckyNumberEntry.countDocuments({ drawCycleId: cycle._id });
+
+    let matchingParticipants: any[] = [];
+    let tierAllocations: any = null;
+
+    if (cycle.winningNumbers && cycle.winningNumbers.length === 5) {
+      const results = await DrawResult.find({ drawCycleId: cycle._id }).populate('userId', 'fullName email');
+
+      const pool5 =
+        cycle.prizePool * 0.4 +
+        (cycle.jackpotAmount > cycle.prizePool * 0.4 ? cycle.jackpotAmount - cycle.prizePool * 0.4 : 0);
+      const pool4 = cycle.prizePool * 0.35;
+      const pool3 = cycle.prizePool * 0.25;
+
+      const count5 = results.filter((r) => r.matchCount === 5).length;
+      const count4 = results.filter((r) => r.matchCount === 4).length;
+      const count3 = results.filter((r) => r.matchCount === 3).length;
+
+      tierAllocations = {
+        '5-match': {
+          name: '5 Matches (Jackpot)',
+          percentage: '40%',
+          pool: pool5,
+          winners: count5,
+          perWinner: count5 > 0 ? Math.round(pool5 / count5) : 0,
+          rollover: cycle.jackpotRollover ?? count5 === 0,
+        },
+        '4-match': {
+          name: '4 Matches',
+          percentage: '35%',
+          pool: pool4,
+          winners: count4,
+          perWinner: count4 > 0 ? Math.round(pool4 / count4) : 0,
+          rollover: false,
+        },
+        '3-match': {
+          name: '3 Matches',
+          percentage: '25%',
+          pool: pool3,
+          winners: count3,
+          perWinner: count3 > 0 ? Math.round(pool3 / count3) : 0,
+          rollover: false,
+        },
+      };
+
+      matchingParticipants = results.map((r) => {
+        const u = r.userId as any;
+        return {
+          userId: u?._id?.toString() || (typeof r.userId === 'string' ? r.userId : r.userId?.toString()),
+          userName: u?.fullName || 'Golfer Member',
+          userEmail: u?.email || '—',
+          luckyNumbers: r.luckyNumbers,
+          matchedNumbers: r.matchedNumbers,
+          matchCount: r.matchCount,
+          tier: r.prizeTier,
+          prizeAmount: r.prizeAmount,
+          paymentStatus: r.paymentStatus || 'NOT_WINNER',
+          verificationStatus: r.verificationStatus || 'NONE',
+        };
+      });
+    }
+
     res.status(200).json({
       success: true,
       cycle: {
@@ -101,10 +163,18 @@ export const getCurrentDraw = async (req: Request, res: Response): Promise<void>
         prizePool: cycle.prizePool,
         jackpotRollover: cycle.jackpotRollover,
         jackpotAmount: cycle.jackpotAmount,
+        isDemo: cycle.isDemo ?? true,
+        demoRunCount: cycle.demoRunCount || 0,
         lockDate: cycle.lockDate,
         drawnAt: cycle.drawnAt,
         publishedAt: cycle.publishedAt,
       },
+      totalParticipants,
+      matchingParticipants,
+      tierAllocations,
+      isDemo: true,
+      demoRunNumber: cycle.demoRunCount || 1,
+      label: 'DEMO RESULT — NOT AN OFFICIAL PRODUCTION RESULT',
       userEntry: userEntry
         ? {
             id: userEntry._id.toString(),
@@ -328,11 +398,10 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
       winningNumbers = generateIndependentWinningNumbers();
     }
 
-    // 2. Fetch all user entries for this cycle
-    const entries = await LuckyNumberEntry.find({ drawCycleId: cycle._id });
+    // 2. Fetch all user entries for this cycle with user information
+    const entries = await LuckyNumberEntry.find({ drawCycleId: cycle._id }).populate('userId', 'fullName email');
 
     // 3. Match calculation across all participants
-    // Note: Multiple users CAN have chosen identical numbers. Each gets matched individually.
     const tierWinners: { [tier: string]: typeof entries } = {
       '5-match': [],
       '4-match': [],
@@ -341,7 +410,9 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
     };
 
     const evaluatedResults: {
-      userId: mongoose.Types.ObjectId;
+      userId: any;
+      userName: string;
+      userEmail: string;
       luckyNumbers: number[];
       matchCount: number;
       matchedNumbers: number[];
@@ -349,6 +420,11 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
     }[] = [];
 
     for (const entry of entries) {
+      const user = entry.userId as any;
+      const userName = user?.fullName || 'Golfer Member';
+      const userEmail = user?.email || '—';
+      const rawUserId = user?._id || entry.userId;
+
       const matched = entry.numbers.filter((n) => winningNumbers.includes(n));
       const matchCount = matched.length;
       let tier: '5-match' | '4-match' | '3-match' | 'none' = 'none';
@@ -359,7 +435,9 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
 
       tierWinners[tier].push(entry);
       evaluatedResults.push({
-        userId: entry.userId,
+        userId: rawUserId,
+        userName,
+        userEmail,
         luckyNumbers: entry.numbers,
         matchCount,
         matchedNumbers: matched,
@@ -372,7 +450,9 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
     // 4-match: 35% of prize pool (NO rollover)
     // 3-match: 25% of prize pool (NO rollover)
     // 0-2 matches: No prize
-    const pool5 = (cycle.prizePool * 0.40) + (cycle.jackpotAmount > cycle.prizePool * 0.40 ? (cycle.jackpotAmount - cycle.prizePool * 0.40) : 0);
+    const pool5 =
+      cycle.prizePool * 0.4 +
+      (cycle.jackpotAmount > cycle.prizePool * 0.4 ? cycle.jackpotAmount - cycle.prizePool * 0.4 : 0);
     const pool4 = cycle.prizePool * 0.35;
     const pool3 = cycle.prizePool * 0.25;
 
@@ -388,7 +468,9 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
     // Rollover rule: Only 5-match jackpot rolls over if 0 winners
     const jackpotRolloverOccurred = count5 === 0;
 
-    // 5. Persist DrawResult for all users
+    // 5. Persist DrawResult for all users and build return list
+    const formattedParticipants: any[] = [];
+
     for (const resItem of evaluatedResults) {
       let prizeAmount = 0;
       let totalWinnersInTier = 0;
@@ -424,6 +506,18 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
         },
         { upsert: true, new: true }
       );
+
+      formattedParticipants.push({
+        userId: resItem.userId?.toString(),
+        userName: resItem.userName,
+        userEmail: resItem.userEmail,
+        luckyNumbers: resItem.luckyNumbers,
+        matchedNumbers: resItem.matchedNumbers,
+        matchCount: resItem.matchCount,
+        tier: resItem.tier,
+        prizeAmount,
+        paymentStatus,
+      });
     }
 
     // 6. Update Draw Cycle
@@ -431,32 +525,70 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
     cycle.drawnAt = new Date();
     cycle.publishedAt = new Date();
     cycle.status = 'published';
+    cycle.isDemo = true;
+    cycle.demoRunCount = (cycle.demoRunCount || 0) + 1;
     cycle.jackpotRollover = jackpotRolloverOccurred;
     if (jackpotRolloverOccurred) {
       // 40% jackpot amount rolls into next month's jackpot
       cycle.jackpotAmount = pool5;
     } else {
       // Reset to base 40%
-      cycle.jackpotAmount = cycle.prizePool * 0.40;
+      cycle.jackpotAmount = cycle.prizePool * 0.4;
     }
     await cycle.save();
 
     res.status(200).json({
       success: true,
-      message: 'Monthly Draw executed and results published successfully.',
+      isDemo: true,
+      demoRunNumber: cycle.demoRunCount,
+      label: 'DEMO RESULT — NOT AN OFFICIAL PRODUCTION RESULT',
+      message: `Monthly Draw executed successfully in Demo Mode (Run #${cycle.demoRunCount}). Results updated across ${entries.length} member entries.`,
+      executedAt: new Date().toISOString(),
+      winningNumbers,
       drawCycle: {
         id: cycle._id.toString(),
+        name: cycle.name,
         month: cycle.month,
         year: cycle.year,
+        status: cycle.status,
         winningNumbers,
         prizePool: cycle.prizePool,
-        tierAllocations: {
-          '5-match': { pool: pool5, winners: count5, perWinner: prizePer5, rollover: jackpotRolloverOccurred },
-          '4-match': { pool: pool4, winners: count4, perWinner: prizePer4, rollover: false },
-          '3-match': { pool: pool3, winners: count3, perWinner: prizePer3, rollover: false },
-        },
-        totalParticipants: entries.length,
+        jackpotAmount: cycle.jackpotAmount,
+        jackpotRollover: cycle.jackpotRollover,
+        isDemo: cycle.isDemo,
+        demoRunCount: cycle.demoRunCount,
+        drawnAt: cycle.drawnAt,
+        publishedAt: cycle.publishedAt,
       },
+      tierAllocations: {
+        '5-match': {
+          name: '5 Matches (Jackpot)',
+          percentage: '40%',
+          pool: pool5,
+          winners: count5,
+          perWinner: prizePer5,
+          rollover: jackpotRolloverOccurred,
+        },
+        '4-match': {
+          name: '4 Matches',
+          percentage: '35%',
+          pool: pool4,
+          winners: count4,
+          perWinner: prizePer4,
+          rollover: false,
+        },
+        '3-match': {
+          name: '3 Matches',
+          percentage: '25%',
+          pool: pool3,
+          winners: count3,
+          perWinner: prizePer3,
+          rollover: false,
+        },
+      },
+      matchingParticipants: formattedParticipants,
+      totalParticipants: entries.length,
+      notice: 'This draw was executed in DEMO MODE for project evaluation. Results are repeatable.',
     });
   } catch (error: any) {
     console.error('Error executing draw:', error);

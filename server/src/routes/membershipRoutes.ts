@@ -9,6 +9,7 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 const router = Router();
 
 router.post('/demo', requireAuth, activateDemoMembership);
+router.post('/activate', requireAuth, activateDemoMembership);
 router.get('/status', requireAuth, getMembershipStatus);
 router.post('/charity', requireAuth, updateCharity);
 router.put('/charity', requireAuth, updateCharity);

@@ -131,7 +131,7 @@ export const PaymentPage: React.FC = () => {
         key: orderRes.keyId,
         amount: orderRes.amount,
         currency: orderRes.currency || 'INR',
-        name: 'Digital Heroes',
+        name: 'Golf-Hero',
         description: `${orderRes.plan.name} (${orderRes.plan.billingPeriod === 'year' ? 'Annual' : 'Monthly'})`,
         prefill: {
           name: user.fullName || '',

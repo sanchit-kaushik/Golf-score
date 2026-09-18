@@ -104,7 +104,7 @@ export const DrawSection: React.FC = () => {
               Cryptographic Transparency & Fair Algorithms
             </h4>
             <p className="text-xs sm:text-sm text-charcoal-muted leading-relaxed">
-              Draw numbers correspond to the standard 1–45 range matching valid Stableford point scores. Digital Heroes utilizes provably fair algorithmic selection, ensuring verified integrity with zero bias and immediate public audit logs.
+              Draw numbers correspond to the standard 1–45 range matching valid Stableford point scores. Golf-Hero utilizes provably fair algorithmic selection, ensuring verified integrity with zero bias and immediate public audit logs.
             </p>
           </div>
         </div>

@@ -78,7 +78,7 @@ export const LoginPage: React.FC = () => {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#2C4C38] to-[#1B3022] border border-[#3E654C] mx-auto flex items-center justify-center mb-3 shadow-md">
               <Shield className="w-6 h-6 text-[#D4AF37]" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">DIGITAL HEROES</h1>
+            <h1 className="text-xl font-bold tracking-tight">GOLF-HERO</h1>
             <p className="text-xs text-white/75 mt-1 font-mono uppercase tracking-widest">
               Secure Member & Admin Access
             </p>

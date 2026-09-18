@@ -8,7 +8,7 @@ import { seedInitialData } from './utils/seedData.js';
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5001;
 
 const startServer = async () => {
-  console.log('🚀 [Digital Heroes Backend] Initializing server...');
+  console.log('🚀 [Golf-Hero Backend] Initializing server...');
 
   // Connect to MongoDB Atlas
   const connected = await connectDB();
@@ -18,7 +18,7 @@ const startServer = async () => {
 
   const server = app.listen(PORT, () => {
     console.log(`\n==================================================`);
-    console.log(`DIGITAL HEROES BACKEND API SERVER RUNNING`);
+    console.log(`GOLF-HERO BACKEND API SERVER RUNNING`);
     console.log(`Port:        ${PORT}`);
     console.log(`URL:         http://localhost:${PORT}`);
     console.log(`Health:      http://localhost:${PORT}/api/health`);
@@ -29,9 +29,9 @@ const startServer = async () => {
 
   // Graceful shutdown
   const shutdown = () => {
-    console.log('\n[Digital Heroes Backend] Gracefully shutting down...');
+    console.log('\n[Golf-Hero Backend] Gracefully shutting down...');
     server.close(() => {
-      console.log('[Digital Heroes Backend] Process terminated.');
+      console.log('[Golf-Hero Backend] Process terminated.');
       process.exit(0);
     });
   };
@@ -41,6 +41,6 @@ const startServer = async () => {
 };
 
 startServer().catch((err) => {
-  console.error('[Digital Heroes Backend] Fatal startup error:', err);
+  console.error('[Golf-Hero Backend] Fatal startup error:', err);
   process.exit(1);
 });

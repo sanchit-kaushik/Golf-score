@@ -31,12 +31,12 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-5 flex flex-col items-start">
             <Link to="/" className="flex items-center gap-3 mb-4 group">
               <div className="w-9 h-9 rounded-xl bg-white text-charcoal flex items-center justify-center font-bold text-base tracking-wider shadow-sm group-hover:bg-sage-200 transition-colors">
-                <span className="font-serif italic font-normal text-lg text-sage-800">D</span>
+                <span className="font-serif italic font-normal text-lg text-sage-800">G</span>
                 <span className="font-sans font-bold text-xs -ml-0.5 text-charcoal">H</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-sans font-extrabold tracking-widest text-base text-white leading-none">
-                  DIGITAL HEROES
+                  GOLF-HERO
                 </span>
                 <span className="text-[10px] tracking-wider uppercase text-sand-300 mt-0.5 font-medium">
                   Play For More Than The Score
@@ -119,7 +119,7 @@ export const Footer: React.FC = () => {
               Ethical Standards
             </h4>
             <p className="text-sand-300 text-xs leading-relaxed mb-4 font-light">
-              Digital Heroes operates under strict standards of game integrity, cryptographic random generation for all monthly draws, and 100% verified non-profit disbursements.
+              Golf-Hero operates under strict standards of game integrity, cryptographic random generation for all monthly draws, and 100% verified non-profit disbursements.
             </p>
             <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3 text-xs text-sand-200">
               <Shield className="w-4 h-4 text-sage-400 shrink-0" />
@@ -132,7 +132,7 @@ export const Footer: React.FC = () => {
         {/* Bottom Legal & Copyright Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-sand-400">
           <div className="flex items-center gap-1 text-center sm:text-left">
-            <span>© {new Date().getFullYear()} Digital Heroes. All rights reserved. Built with</span>
+            <span>© {new Date().getFullYear()} Golf-Hero. All rights reserved. Built with</span>
             <Heart className="w-3.5 h-3.5 text-sage-400 inline mx-0.5 fill-sage-400" />
             <span>for golfers and communities.</span>
           </div>
@@ -165,11 +165,11 @@ export const Footer: React.FC = () => {
             <p className="text-xs sm:text-sm text-charcoal-muted leading-relaxed mb-6 max-h-60 overflow-y-auto pr-2">
               {legalModalContent === 'privacy' ? (
                 <>
-                  At Digital Heroes, your privacy and data sovereignty are paramount. We collect golf round scores solely for draw calculation and member verification. Scorecards and proof uploads are encrypted and handled in strict adherence to data protection standards.
+                  At Golf-Hero, your privacy and data sovereignty are paramount. We collect golf round scores solely for draw calculation and member verification. Scorecards and proof uploads are encrypted and handled in strict adherence to data protection standards.
                 </>
               ) : (
                 <>
-                  Digital Heroes operates as a skill-based golf performance subscription platform. Scores entered must reflect genuine rounds played under standard rules. A minimum of 10% of subscription proceeds are allocated to verified charitable partners according to member designation.
+                  Golf-Hero operates as a skill-based golf performance subscription platform. Scores entered must reflect genuine rounds played under standard rules. A minimum of 10% of subscription proceeds are allocated to verified charitable partners according to member designation.
                 </>
               )}
             </p>

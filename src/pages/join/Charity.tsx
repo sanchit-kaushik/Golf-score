@@ -88,7 +88,7 @@ export const CharityPage: React.FC = () => {
                 1
               </span>
               <p>
-                <strong>Minimum 10% Contribution:</strong> Under the Digital Heroes charter, at least 10% of your membership fee is automatically allocated to your selected cause.
+                <strong>Minimum 10% Contribution:</strong> Under the Golf-Hero charter, at least 10% of your membership fee is automatically allocated to your selected cause.
               </p>
             </div>
 

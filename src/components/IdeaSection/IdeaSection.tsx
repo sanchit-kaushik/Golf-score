@@ -31,7 +31,7 @@ export const IdeaSection: React.FC = () => {
           <span className="italic text-sage-700">play, reward, and purpose.</span>
         </h2>
         <p className="text-charcoal-muted text-base sm:text-lg max-w-xl mx-auto">
-          Digital Heroes seamlessly unites your love for the game with the excitement of monthly draws and tangible real-world giving.
+          Golf-Hero seamlessly unites your love for the game with the excitement of monthly draws and tangible real-world giving.
         </p>
       </div>
 

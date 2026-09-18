@@ -120,7 +120,7 @@ export const ImpactSection: React.FC = () => {
               “Feel, not fairway. When players step onto the course knowing their round supports someone in need, every shot carries dignity.”
             </p>
             <p className="text-xs font-mono tracking-widest uppercase text-sage-400 mt-4 font-bold">
-              The Digital Heroes Creed
+              The Golf-Hero Creed
             </p>
           </div>
           <Link to="/join" className="shrink-0">

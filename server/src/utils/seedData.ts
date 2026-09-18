@@ -102,7 +102,7 @@ export const seedInitialData = async (): Promise<void> => {
       const salt = await bcrypt.genSalt(12);
       const passwordHash = await bcrypt.hash('Admin@12345', salt);
       await User.create({
-        fullName: 'Digital Heroes Admin',
+        fullName: 'Golf-Hero Admin',
         email: adminEmail,
         passwordHash,
         role: 'admin',

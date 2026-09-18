@@ -81,7 +81,7 @@ export const AdminUsers: React.FC = () => {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-[#1B3022]">User Management</h1>
             <p className="text-xs text-stone-500 mt-0.5">
-              Real MongoDB users registered on Digital Heroes ({users.length} total accounts)
+              Real MongoDB users registered on Golf-Hero ({users.length} total accounts)
             </p>
           </div>
           <div className="flex items-center gap-3">

@@ -7,6 +7,7 @@ import { DrawCycle } from '../models/DrawCycle.js';
 import { DrawResult } from '../models/DrawResult.js';
 import { LuckyNumberEntry } from '../models/LuckyNumberEntry.js';
 import { WinnerVerification } from '../models/WinnerVerification.js';
+import { executeDraw } from './drawController.js';
 
 /**
  * GET /api/admin/overview
@@ -394,6 +395,17 @@ export const simulateDraw = async (_req: Request, res: Response): Promise<void> 
     res.status(500).json({ success: false, error: 'Failed to simulate draw.' });
   }
 };
+
+/**
+ * POST /api/admin/draws/demo-draw
+ * Executes the unified Monthly Draw in Demo Mode.
+ * Delegates to executeDraw to guarantee a single data pipeline:
+ * User Lucky Numbers -> CURRENT MONTHLY DRAW -> CURRENT WINNING NUMBERS -> MATCHING -> PRIZES / WINNERS.
+ */
+export const runDemoDraw = async (req: Request, res: Response): Promise<void> => {
+  return executeDraw(req, res);
+};
+
 
 /**
  * POST /api/admin/draws/generate-numbers

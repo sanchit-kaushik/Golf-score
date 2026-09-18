@@ -27,7 +27,7 @@ export const CharitySection: React.FC = () => {
             <span className="italic text-sage-700">something back.</span>
           </h2>
           <p className="text-charcoal-muted text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-            Golf has always been a game of honor and community. With Digital Heroes, you choose a certified cause, and at least 10% of your regular membership fee is contributed directly in your name.
+            Golf has always been a game of honor and community. With Golf-Hero, you choose a certified cause, and at least 10% of your regular membership fee is contributed directly in your name.
           </p>
         </div>
 
@@ -207,7 +207,7 @@ export const CharitySection: React.FC = () => {
             </div>
 
             <p className="text-charcoal-muted text-sm mb-6">
-              As a Digital Heroes member, you can allocate your contribution to any of our certified non-profit partners or suggest a new local golf or community initiative for onboard verification.
+              As a Golf-Hero member, you can allocate your contribution to any of our certified non-profit partners or suggest a new local golf or community initiative for onboard verification.
             </p>
 
             <div className="space-y-4 mb-8">

@@ -60,12 +60,12 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-500 rounded-lg p-1"
           >
             <div className="w-9 h-9 rounded-xl bg-charcoal text-white flex items-center justify-center font-bold text-base tracking-wider shadow-sm group-hover:bg-sage-800 transition-colors">
-              <span className="font-serif italic font-normal text-lg text-gold-400">D</span>
+              <span className="font-serif italic font-normal text-lg text-gold-400">G</span>
               <span className="font-sans font-bold text-xs -ml-0.5 text-white">H</span>
             </div>
             <div className="flex flex-col">
               <span className="font-sans font-extrabold tracking-widest text-sm sm:text-base text-charcoal leading-none">
-                DIGITAL HEROES
+                GOLF-HERO
               </span>
               <span className="text-[10px] tracking-wider uppercase text-charcoal-muted mt-0.5 font-medium">
                 Golf • Chance • Charity

@@ -50,7 +50,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold tracking-widest text-sm text-white leading-none">
-                  DIGITAL HEROES
+                  GOLF-HERO
                 </span>
                 <span className="text-[10px] tracking-wider uppercase text-[#D4AF37] font-semibold mt-0.5">
                   ADMIN CONTROL

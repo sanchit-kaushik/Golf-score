@@ -14,6 +14,8 @@ export interface IDrawCycle extends Document {
   jackpotRollover: boolean;
   jackpotAmount: number;
   simulatedNumbers?: number[];
+  isDemo?: boolean;
+  demoRunCount?: number;
   lockDate: Date;
   drawnAt?: Date | null;
   publishedAt?: Date | null;
@@ -79,6 +81,14 @@ const DrawCycleSchema = new Schema<IDrawCycle>(
     simulatedNumbers: {
       type: [Number],
       default: [],
+    },
+    isDemo: {
+      type: Boolean,
+      default: true,
+    },
+    demoRunCount: {
+      type: Number,
+      default: 0,
     },
     lockDate: {
       type: Date,

@@ -19,7 +19,17 @@ import { useAuth } from '../context/AuthContext';
 
 export const DrawPage: React.FC = () => {
   const navigate = useNavigate();
-  const { luckyNumbers: authLuckyNumbers } = useAuth();
+  const { luckyNumbers: authLuckyNumbers, isAuthenticated, isLoading, membershipStatus } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        navigate('/login');
+      } else if (membershipStatus !== 'active') {
+        navigate('/dashboard');
+      }
+    }
+  }, [isLoading, isAuthenticated, membershipStatus, navigate]);
 
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -155,7 +165,7 @@ export const DrawPage: React.FC = () => {
 
           <div className="flex items-center gap-2.5">
             <span className="font-serif font-bold text-sm tracking-tight text-charcoal">
-              DIGITAL HEROES
+              GOLF-HERO
             </span>
             <Badge variant="sage" className="text-[10px] font-mono py-0.5">
               MONTHLY DRAW

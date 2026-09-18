@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const isProduction = import.meta.env.PROD;
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (isProduction ? 'https://golf-score-1-pn0b.onrender.com' : 'http://localhost:5001');
 
 const TOKEN_KEY = 'dh_auth_jwt_token';
 
@@ -198,6 +201,48 @@ export const api = {
           lockDate: string;
           drawnAt?: string | null;
         };
+        totalParticipants?: number;
+        matchingParticipants?: Array<{
+          userId: string;
+          userName: string;
+          userEmail: string;
+          luckyNumbers: number[];
+          matchedNumbers: number[];
+          matchCount: number;
+          tier: string;
+          prizeAmount: number;
+          paymentStatus?: string;
+          verificationStatus?: string;
+        }>;
+        tierAllocations?: {
+          '5-match': {
+            name: string;
+            percentage: string;
+            pool: number;
+            winners: number;
+            perWinner: number;
+            rollover: boolean;
+          };
+          '4-match': {
+            name: string;
+            percentage: string;
+            pool: number;
+            winners: number;
+            perWinner: number;
+            rollover: boolean;
+          };
+          '3-match': {
+            name: string;
+            percentage: string;
+            pool: number;
+            winners: number;
+            perWinner: number;
+            rollover: boolean;
+          };
+        };
+        isDemo?: boolean;
+        demoRunNumber?: number;
+        label?: string;
         userEntry: {
           id: string;
           numbers: number[];
@@ -599,6 +644,56 @@ export const api = {
       }>('/api/admin/draws/simulate', { method: 'POST' });
     },
 
+    runDemoDraw: async () => {
+      return request<{
+        success: boolean;
+        isDemo: boolean;
+        demoRunNumber: number;
+        executedAt: string;
+        label: string;
+        winningNumbers: number[];
+        prizePool: number;
+        evaluatedEntriesCount: number;
+        tiers: {
+          tier5: {
+            name: string;
+            percentage: string;
+            poolAmount: number;
+            winnerCount: number;
+            prizePerWinner: number;
+            rollover: boolean;
+          };
+          tier4: {
+            name: string;
+            percentage: string;
+            poolAmount: number;
+            winnerCount: number;
+            prizePerWinner: number;
+            rollover: boolean;
+          };
+          tier3: {
+            name: string;
+            percentage: string;
+            poolAmount: number;
+            winnerCount: number;
+            prizePerWinner: number;
+            rollover: boolean;
+          };
+        };
+        winners: Array<{
+          userId: string;
+          userName: string;
+          userEmail: string;
+          luckyNumbers: number[];
+          matchedNumbers: number[];
+          matchCount: number;
+          tier: string;
+          prizeAmount: number;
+        }>;
+        notice: string;
+      }>('/api/admin/draws/demo-draw', { method: 'POST' });
+    },
+
     generateWinningNumbers: async () => {
       return request<{
         success: boolean;
@@ -619,6 +714,61 @@ export const api = {
         success: boolean;
         cycle: any;
       }>('/api/admin/draws/open', { method: 'POST' });
+    },
+
+    executeDraw: async (winningNumbers?: number[]) => {
+      return request<{
+        success: boolean;
+        isDemo: boolean;
+        demoRunNumber: number;
+        label: string;
+        message?: string;
+        executedAt: string;
+        winningNumbers: number[];
+        drawCycle: any;
+        tierAllocations: {
+          '5-match': {
+            name: string;
+            percentage: string;
+            pool: number;
+            winners: number;
+            perWinner: number;
+            rollover: boolean;
+          };
+          '4-match': {
+            name: string;
+            percentage: string;
+            pool: number;
+            winners: number;
+            perWinner: number;
+            rollover: boolean;
+          };
+          '3-match': {
+            name: string;
+            percentage: string;
+            pool: number;
+            winners: number;
+            perWinner: number;
+            rollover: boolean;
+          };
+        };
+        matchingParticipants: Array<{
+          userId: string;
+          userName: string;
+          userEmail: string;
+          luckyNumbers: number[];
+          matchedNumbers: number[];
+          matchCount: number;
+          tier: string;
+          prizeAmount: number;
+          paymentStatus?: string;
+        }>;
+        totalParticipants: number;
+        notice?: string;
+      }>('/api/admin/draws/execute', {
+        method: 'POST',
+        body: JSON.stringify({ winningNumbers }),
+      });
     },
 
     publishDraw: async (winningNumbers?: number[]) => {

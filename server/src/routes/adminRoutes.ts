@@ -12,6 +12,7 @@ import {
   updateAdminWinnerVerification,
   markAdminWinnerPayout,
   simulateDraw,
+  runDemoDraw,
   generateWinningNumbers,
   getAdminReports,
 } from '../controllers/adminController.js';
@@ -46,6 +47,7 @@ router.get('/donations', getAdminDonations);
 // Draw Management
 router.get('/draws/current', getCurrentDraw);
 router.post('/draws/simulate', simulateDraw);
+router.post('/draws/demo-draw', runDemoDraw);
 router.post('/draws/generate-numbers', generateWinningNumbers);
 router.post('/draws/lock', adminLockDraw);
 router.post('/draws/open', adminOpenDraw);

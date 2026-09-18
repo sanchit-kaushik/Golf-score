@@ -79,7 +79,7 @@ export const AdditionalDonationModal: React.FC<AdditionalDonationModalProps> = (
         key: orderRes.keyId,
         amount: orderRes.amount,
         currency: orderRes.currency || 'INR',
-        name: 'Digital Heroes',
+        name: 'Golf-Hero',
         description: `Independent Donation to ${orderRes.charity?.name || activeCharity.name}`,
         order_id: orderRes.orderId,
         prefill: {

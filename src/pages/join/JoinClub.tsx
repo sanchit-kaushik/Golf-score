@@ -43,7 +43,7 @@ export const JoinClubPage: React.FC = () => {
           </h1>
 
           <p className="text-charcoal-muted text-base sm:text-lg font-light leading-relaxed max-w-2xl mx-auto">
-            Your Digital Heroes membership unlocks verified golf score tracking, entry into high-tier monthly draws, prize opportunities, and certified contributions to a charity of your choice.
+            Your Golf-Hero membership unlocks verified golf score tracking, entry into high-tier monthly draws, prize opportunities, and certified contributions to a charity of your choice.
           </p>
         </motion.div>
 

@@ -311,12 +311,12 @@ export const ActiveMemberDashboard: React.FC<ActiveMemberDashboardProps> = ({ is
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-3 shrink-0">
             <div className="w-8 h-8 rounded-xl bg-charcoal text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm">
-              <span className="font-serif italic font-normal text-base text-gold-400">D</span>
+              <span className="font-serif italic font-normal text-base text-gold-400">G</span>
               <span className="font-sans font-bold text-[11px] -ml-0.5 text-white">H</span>
             </div>
             <div className="flex flex-col">
               <span className="font-sans font-extrabold tracking-widest text-sm text-charcoal leading-none">
-                DIGITAL HEROES
+                GOLF-HERO
               </span>
               <span className="text-[10px] tracking-wider uppercase text-charcoal-muted mt-0.5 font-medium">
                 Member Hub
@@ -1359,89 +1359,17 @@ export const ActiveMemberDashboard: React.FC<ActiveMemberDashboardProps> = ({ is
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* ============================================================ */}
-            {/* SECTION 7: ❤️ YOUR CHOSEN CHARITY (MEMBERSHIP ALLOCATION) */}
-            {/* ============================================================ */}
-            <div
-              id="my-charity"
-              className="rounded-3xl bg-white p-6 sm:p-8 border border-sand-200 shadow-card"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-mono uppercase font-bold text-sage-800 bg-sage-50 px-2.5 py-0.5 rounded border border-sage-200">
-                  STEP 7 · MEMBERSHIP GIVING
-                </span>
-                <Heart className="w-4 h-4 text-sage-600 fill-sage-600" />
-              </div>
-
-              <h3 className="font-serif text-2xl font-normal text-charcoal mb-4">
-                ❤️ Your Chosen Charity
-              </h3>
-
-              {/* Charity Image & Details */}
-              <div className="flex items-center gap-4 mb-4">
-                <img
-                  src={activeCharity.imageUrl}
-                  alt={activeCharity.name}
-                  className="w-16 h-16 rounded-2xl object-cover border border-sand-200 shadow-sm shrink-0"
-                />
-                <div>
-                  <Badge variant="sage" className="text-[9px] font-mono py-0 px-2 mb-1">
-                    {activeCharity.category}
-                  </Badge>
-                  <h4 className="font-bold text-base text-charcoal">{activeCharity.name}</h4>
-                  <p className="text-xs text-charcoal-muted line-clamp-2">{activeCharity.summary}</p>
-                </div>
-              </div>
-
-              {/* Contribution Breakdown in INR */}
-              <div className="p-4 rounded-2xl bg-sage-50/70 border border-sage-200/80 mb-5 text-xs space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-charcoal-muted">Membership Pledge Ratio:</span>
-                  <span className="font-mono font-bold text-sage-800">
-                    {charityPledgePercent}% OF SUBSCRIPTION
-                  </span>
-                </div>
-                <div className="flex justify-between items-center border-t border-sage-200/60 pt-2">
-                  <span className="text-charcoal-muted">Monthly Allocation:</span>
-                  <span className="font-mono font-bold text-charcoal text-sm">
-                    ₹{charityMonthlyAllocation} / month allocated to your selected cause
-                  </span>
-                </div>
-              </div>
-
-              {/* Interactive Charity Actions */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsCharityModalOpen(true)}
-                  className="w-full justify-center text-xs"
-                >
-                  <Heart className="w-3.5 h-3.5 mr-1.5 text-sage-600" />
-                  <span>VIEW MY CHARITY</span>
-                </Button>
-
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setIsCharityModalOpen(true)}
-                  className="w-full justify-center text-xs"
-                >
-                  <Edit3 className="w-3.5 h-3.5 mr-1.5" />
-                  <span>CHANGE CHARITY</span>
-                </Button>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-sand-100 flex items-center gap-1.5 text-[10px] text-charcoal-muted">
-                <ShieldCheck className="w-3.5 h-3.5 text-sage-600" />
-                <span>Authoritative allocation tracked to your selected cause.</span>
-              </div>
-            </div>
-
-            {/* ============================================================ */}
-            {/* SECTION 8: 💚 ADDITIONAL DONATIONS */}
-            {/* ============================================================ */}
+        {/* ============================================================ */}
+        {/* CHARITY & ADDITIONAL DONATIONS WORKSPACE */}
+        {/* ============================================================ */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-8">
+          {/* ============================================================ */}
+          {/* LEFT COLUMN: 💚 ADDITIONAL DONATIONS */}
+          {/* ============================================================ */}
+          <div className="lg:col-span-7">
             <div
               id="give-more"
               className="rounded-3xl bg-white p-6 sm:p-8 border border-sand-200 shadow-card"
@@ -1520,6 +1448,87 @@ export const ActiveMemberDashboard: React.FC<ActiveMemberDashboardProps> = ({ is
                   </Button>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* ============================================================ */}
+          {/* RIGHT COLUMN: ❤️ YOUR CHOSEN CHARITY (MEMBERSHIP ALLOCATION) */}
+          {/* ============================================================ */}
+          <div className="lg:col-span-5">
+            <div
+              id="my-charity"
+              className="rounded-3xl bg-white p-6 sm:p-8 border border-sand-200 shadow-card"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-mono uppercase font-bold text-sage-800 bg-sage-50 px-2.5 py-0.5 rounded border border-sage-200">
+                  STEP 7 · MEMBERSHIP GIVING
+                </span>
+                <Heart className="w-4 h-4 text-sage-600 fill-sage-600" />
+              </div>
+
+              <h3 className="font-serif text-2xl font-normal text-charcoal mb-4">
+                ❤️ Your Chosen Charity
+              </h3>
+
+              {/* Charity Image & Details */}
+              <div className="flex items-center gap-4 mb-4">
+                <img
+                  src={activeCharity.imageUrl}
+                  alt={activeCharity.name}
+                  className="w-16 h-16 rounded-2xl object-cover border border-sand-200 shadow-sm shrink-0"
+                />
+                <div>
+                  <Badge variant="sage" className="text-[9px] font-mono py-0 px-2 mb-1">
+                    {activeCharity.category}
+                  </Badge>
+                  <h4 className="font-bold text-base text-charcoal">{activeCharity.name}</h4>
+                  <p className="text-xs text-charcoal-muted line-clamp-2">{activeCharity.summary}</p>
+                </div>
+              </div>
+
+              {/* Contribution Breakdown in INR */}
+              <div className="p-4 rounded-2xl bg-sage-50/70 border border-sage-200/80 mb-5 text-xs space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-charcoal-muted">Membership Pledge Ratio:</span>
+                  <span className="font-mono font-bold text-sage-800">
+                    {charityPledgePercent}% OF SUBSCRIPTION
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-t border-sage-200/60 pt-2">
+                  <span className="text-charcoal-muted">Monthly Allocation:</span>
+                  <span className="font-mono font-bold text-charcoal text-sm">
+                    ₹{charityMonthlyAllocation} / month allocated to your selected cause
+                  </span>
+                </div>
+              </div>
+
+              {/* Interactive Charity Actions */}
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCharityModalOpen(true)}
+                  className="w-full justify-center text-xs"
+                >
+                  <Heart className="w-3.5 h-3.5 mr-1.5 text-sage-600" />
+                  <span>VIEW MY CHARITY</span>
+                </Button>
+
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setIsCharityModalOpen(true)}
+                  className="w-full justify-center text-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                  <span>CHANGE CHARITY</span>
+                </Button>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-sand-100 flex items-center gap-1.5 text-[10px] text-charcoal-muted">
+                <ShieldCheck className="w-3.5 h-3.5 text-sage-600" />
+                <span>Authoritative allocation tracked to your selected cause.</span>
+              </div>
             </div>
           </div>
         </div>

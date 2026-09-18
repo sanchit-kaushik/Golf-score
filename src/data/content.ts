@@ -28,7 +28,7 @@ export const DRAW_STEPS: DrawStep[] = [
   {
     number: "01",
     title: "BECOME A MEMBER",
-    description: "Join the Digital Heroes community and set your personal giving preference.",
+    description: "Join the Golf-Hero community and set your personal giving preference.",
     highlight: "Simple onboarding"
   },
   {

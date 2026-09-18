@@ -1,7 +1,7 @@
 import type { MembershipPlan } from '../types';
 
 /**
- * Digital Heroes Membership Plans Configuration
+ * Golf-Hero Membership Plans Configuration
  * 
  * Note: These are demo prices and configurations.
  * Values can easily be updated here or fed from a backend API when Razorpay is integrated.
@@ -36,7 +36,7 @@ export const MEMBERSHIP_PLANS: MembershipPlan[] = [
     monthlyEquivalent: 23.25,
     discount: 'Save 20% (approx. 2 months free)',
     badge: 'BEST VALUE',
-    billingDescription: 'Billed annually at $279/yr ($23.25/mo equivalent).',
+    billingDescription: 'Billed annually at ₹279/yr (₹23.25/mo equivalent).',
     description: 'Our most popular tier. Enjoy uninterrupted entry into all 12 monthly draws plus sustained philanthropic contribution to your charity.',
     features: [
       'Log your latest 5 Stableford scores (range 1–45)',
@@ -52,7 +52,7 @@ export const MEMBERSHIP_PLANS: MembershipPlan[] = [
 export const MEMBERSHIP_BENEFITS = [
   {
     title: 'Golf score tracking',
-    description: 'Record verified Stableford scores (1–45) from your rounds. Digital Heroes maintains your latest 5 scores in active rotation.'
+    description: 'Record verified Stableford scores (1–45) from your rounds. Golf-Hero maintains your latest 5 scores in active rotation.'
   },
   {
     title: 'Monthly draw participation',

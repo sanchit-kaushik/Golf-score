@@ -28,7 +28,7 @@ export const MembershipBenefits: React.FC = () => {
           What Every Membership Includes
         </h3>
         <p className="text-xs sm:text-sm text-charcoal-muted mt-2">
-          Designed around the official Digital Heroes principles: genuine play, transparent reward tiers, and certified charitable contributions.
+          Designed around the official Golf-Hero principles: genuine play, transparent reward tiers, and certified charitable contributions.
         </p>
       </div>
 

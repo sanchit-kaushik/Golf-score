@@ -13,11 +13,11 @@ export interface ServerPlanConfig {
 export const getPlanConfig = (planId: 'monthly' | 'yearly'): ServerPlanConfig | null => {
   const currency = (process.env.RAZORPAY_CURRENCY || 'INR').toUpperCase();
   
-  // Amounts in smallest currency unit (e.g. 2900 paise = ₹29.00 or $29.00)
+  // Amounts in smallest currency unit (e.g. 2900 paise = ₹29.00 or ₹29.00)
   const plans: Record<'monthly' | 'yearly', ServerPlanConfig> = {
     monthly: {
       id: 'monthly',
-      name: 'Digital Heroes Monthly Membership',
+      name: 'Golf-Hero Monthly Membership',
       tagline: 'Flexible access to monthly draws and verified scoring',
       amount: process.env.RAZORPAY_MONTHLY_AMOUNT ? parseInt(process.env.RAZORPAY_MONTHLY_AMOUNT, 10) : 2900,
       displayPrice: 29,
@@ -28,7 +28,7 @@ export const getPlanConfig = (planId: 'monthly' | 'yearly'): ServerPlanConfig | 
     },
     yearly: {
       id: 'yearly',
-      name: 'Digital Heroes Annual Membership',
+      name: 'Golf-Hero Annual Membership',
       tagline: 'Year-round participation with maximum value and impact',
       amount: process.env.RAZORPAY_YEARLY_AMOUNT ? parseInt(process.env.RAZORPAY_YEARLY_AMOUNT, 10) : 27900,
       displayPrice: 279,

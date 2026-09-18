@@ -28,11 +28,11 @@ export const JoinLayout: React.FC<JoinLayoutProps> = ({ currentStep, children })
           {/* Centered Brand Monogram */}
           <Link to="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-charcoal text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm">
-              <span className="font-serif italic font-normal text-base text-gold-400">D</span>
+              <span className="font-serif italic font-normal text-base text-gold-400">G</span>
               <span className="font-sans font-bold text-[11px] -ml-0.5 text-white">H</span>
             </div>
             <span className="font-sans font-extrabold tracking-widest text-sm text-charcoal leading-none">
-              DIGITAL HEROES
+              GOLF-HERO
             </span>
           </Link>
 
@@ -57,7 +57,7 @@ export const JoinLayout: React.FC<JoinLayoutProps> = ({ currentStep, children })
       <footer className="border-t border-sand-200 bg-white/50 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-charcoal-muted">
           <div>
-            Digital Heroes Membership Onboarding — Step {currentStep} of 5
+            Golf-Hero Membership Onboarding — Step {currentStep} of 5
           </div>
           <div className="flex items-center gap-4">
             <span>Minimum 10% Charity Guarantee</span>

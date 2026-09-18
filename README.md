@@ -1,4 +1,4 @@
-# DIGITAL HEROES
+# GOLF-HERO
 
 > Play for more than the score. A subscription-based platform combining golf performance tracking, monthly draw-based rewards, and certified charity contributions.
 
@@ -124,7 +124,7 @@ npm run build
 
 ## Account Created vs. Membership Active
 
-Digital Heroes maintains a strict separation between account registration and paid membership:
+Golf-Hero maintains a strict separation between account registration and paid membership:
 1. **Account Created (`membershipStatus = "none"`, `membershipMode = "none"`)**:
    * User registers or logs in.
    * Accessing `/dashboard` renders the **New / Non-Member Dashboard** displaying an activation CTA and feature preview.

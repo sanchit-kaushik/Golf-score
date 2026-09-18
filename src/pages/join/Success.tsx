@@ -40,7 +40,7 @@ export const SuccessPage: React.FC = () => {
         </motion.div>
 
         <h1 className="font-serif text-3xl sm:text-5xl text-charcoal font-normal tracking-tight mb-4">
-          Welcome to Digital Heroes.
+          Welcome to Golf-Hero.
         </h1>
 
         <p className="text-charcoal-muted text-sm sm:text-base font-light max-w-lg mx-auto leading-relaxed mb-8">

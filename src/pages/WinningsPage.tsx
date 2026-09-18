@@ -17,7 +17,17 @@ import { useAuth } from '../context/AuthContext';
 
 export const WinningsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading, membershipStatus } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        navigate('/login');
+      } else if (membershipStatus !== 'active') {
+        navigate('/dashboard');
+      }
+    }
+  }, [isLoading, isAuthenticated, membershipStatus, navigate]);
 
   const [winnings, setWinnings] = useState<any[]>([]);
   const [totalWon, setTotalWon] = useState(0);
@@ -88,7 +98,7 @@ export const WinningsPage: React.FC = () => {
 
           <div className="flex items-center gap-2.5">
             <span className="font-serif font-bold text-sm tracking-tight text-charcoal">
-              DIGITAL HEROES
+              GOLF-HERO
             </span>
             <Badge variant="sage" className="text-[10px] font-mono py-0.5">
               MY WINNINGS
@@ -293,7 +303,7 @@ export const WinningsPage: React.FC = () => {
               ) : (
                 <div className="space-y-4">
                   <p className="text-xs text-charcoal-muted leading-relaxed">
-                    According to the Digital Heroes PRD, winners of qualifying tiers must submit a
+                    According to the Golf-Hero PRD, winners of qualifying tiers must submit a
                     screenshot/proof of their golf score platform or course scorecard to complete
                     winner verification before payout distribution.
                   </p>
