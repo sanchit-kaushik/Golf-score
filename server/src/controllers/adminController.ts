@@ -9,6 +9,8 @@ import { LuckyNumberEntry } from '../models/LuckyNumberEntry.js';
 import { WinnerVerification } from '../models/WinnerVerification.js';
 import mongoose from 'mongoose';
 import { executeDraw } from './drawController.js';
+import { memoryUsers } from '../utils/userStore.js';
+import { ensureDbConnected } from '../config/db.js';
 
 /**
  * GET /api/admin/overview
@@ -80,38 +82,69 @@ export const getAdminOverview = async (_req: Request, res: Response): Promise<vo
  */
 export const getAdminUsers = async (_req: Request, res: Response): Promise<void> => {
   try {
-    if (mongoose.connection.readyState !== 1) {
+    await ensureDbConnected().catch(() => {});
+
+    if (mongoose.connection.readyState === 1) {
+      const dbUsers = await User.find()
+        .select('-passwordHash')
+        .sort({ createdAt: -1 })
+        .lean();
+
+      // Merge any in-memory users not present in MongoDB
+      const allUsers = [...dbUsers];
+      const emailsInDb = new Set(dbUsers.map((u: any) => u.email?.toLowerCase()));
+
+      for (const memUser of memoryUsers.values()) {
+        if (memUser && memUser.email && !emailsInDb.has(memUser.email.toLowerCase())) {
+          const safe = typeof memUser.toJSON === 'function' ? memUser.toJSON() : { ...memUser };
+          delete safe.passwordHash;
+          allUsers.push(safe);
+          emailsInDb.add(memUser.email.toLowerCase());
+        }
+      }
+
       res.status(200).json({
         success: true,
-        users: [
-          {
-            _id: 'admin_seeded_001',
-            id: 'admin_seeded_001',
-            fullName: 'Golf-Hero Admin',
-            email: 'admin@digitalheroes.test',
-            role: 'admin',
-            membershipStatus: 'active',
-            membershipMode: 'real',
-            membershipPlan: 'yearly',
-            selectedCharity: 'youth-golf',
-            charityContributionPercentage: 10,
-            paymentStatus: 'paid',
-            createdAt: new Date().toISOString(),
-          }
-        ],
-        count: 1,
+        users: allUsers,
+        count: allUsers.length,
       });
       return;
     }
 
-    const users = await User.find()
-      .select('-passwordHash')
-      .sort({ createdAt: -1 });
+    // Offline / disconnected mode: return all users from memory
+    const memUsersList: any[] = [];
+    const seenEmails = new Set<string>();
+
+    for (const u of memoryUsers.values()) {
+      if (u && u.email && !seenEmails.has(u.email.toLowerCase())) {
+        const safe = typeof u.toJSON === 'function' ? u.toJSON() : { ...u };
+        delete safe.passwordHash;
+        memUsersList.push(safe);
+        seenEmails.add(u.email.toLowerCase());
+      }
+    }
+
+    if (memUsersList.length === 0) {
+      memUsersList.push({
+        _id: '66eedd112233445566778899',
+        id: '66eedd112233445566778899',
+        fullName: 'Golf-Hero Admin',
+        email: 'admin@digitalheroes.test',
+        role: 'admin',
+        membershipStatus: 'active',
+        membershipMode: 'real',
+        membershipPlan: 'yearly',
+        selectedCharity: 'youth-golf',
+        charityContributionPercentage: 10,
+        paymentStatus: 'paid',
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     res.status(200).json({
       success: true,
-      users,
-      count: users.length,
+      users: memUsersList,
+      count: memUsersList.length,
     });
   } catch (error: any) {
     console.error('Error fetching admin users:', error);

@@ -52,6 +52,7 @@ router.post('/draws/generate-numbers', generateWinningNumbers);
 router.post('/draws/lock', adminLockDraw);
 router.post('/draws/open', adminOpenDraw);
 router.post('/draws/execute', executeDraw);
+router.post('/draws/publish', executeDraw);
 
 // Winner Verification & Payouts
 router.get('/winners', getAdminWinners);

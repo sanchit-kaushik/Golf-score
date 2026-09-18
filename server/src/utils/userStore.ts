@@ -3,7 +3,7 @@ import { User, IUser, MembershipStatus, MembershipMode, MembershipPlanType, Paym
 import { isConnectedToMongoDB } from '../config/db.js';
 
 // In-memory fallback repository when MongoDB connection is not active
-const memoryUsers = new Map<string, any>();
+export const memoryUsers = new Map<string, any>();
 
 /**
  * Seeds the admin test account into the in-memory fallback store
@@ -15,7 +15,7 @@ export const seedAdminInMemory = async (): Promise<void> => {
   const bcrypt = await import('bcryptjs');
   const salt = await bcrypt.default.genSalt(12);
   const passwordHash = await bcrypt.default.hash(plainPassword, salt);
-  const id = 'admin_seeded_001';
+  const id = '66eedd112233445566778899'; // Valid 24-hex ObjectId
 
   const adminDoc: any = {
     id,
@@ -45,6 +45,8 @@ export const seedAdminInMemory = async (): Promise<void> => {
   };
 
   memoryUsers.set(adminEmail, adminDoc);
+  memoryUsers.set(id, adminDoc);
+  memoryUsers.set('admin_seeded_001', adminDoc);
   console.log('✅ [userStore] In-memory admin test account seeded and verified.');
 };
 
@@ -62,10 +64,15 @@ export interface RealPaymentActivationDetails {
 
 export const userStore = {
   async findByEmail(email: string): Promise<any | null> {
+    if (!email) return null;
     const normalizedEmail = email.trim().toLowerCase();
-    if (isConnectedToMongoDB) {
-      const mongoUser = await User.findOne({ email: normalizedEmail });
-      if (mongoUser) return mongoUser;
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const mongoUser = await User.findOne({ email: normalizedEmail });
+        if (mongoUser) return mongoUser;
+      } catch (err) {
+        console.warn('⚠️ [userStore.findByEmail] Mongoose lookup error:', err);
+      }
     }
     // Fallback: If querying admin and not yet in memory, seed it automatically
     if (normalizedEmail === 'admin@digitalheroes.test' && !memoryUsers.has(normalizedEmail)) {
@@ -77,7 +84,7 @@ export const userStore = {
   async findById(id: string): Promise<any | null> {
     if (!id) return null;
 
-    if (isConnectedToMongoDB) {
+    if (mongoose.connection.readyState === 1) {
       if (mongoose.Types.ObjectId.isValid(id)) {
         try {
           const doc = await User.findById(id);
@@ -88,8 +95,12 @@ export const userStore = {
       }
     }
 
+    if (memoryUsers.has(id)) {
+      return memoryUsers.get(id);
+    }
+
     for (const user of memoryUsers.values()) {
-      if (user.id === id || user._id === id) {
+      if (user.id === id || user._id === id || user.email === id) {
         return user;
       }
     }
@@ -107,20 +118,26 @@ export const userStore = {
   }): Promise<any> {
     const normalizedEmail = data.email.trim().toLowerCase();
 
-    if (isConnectedToMongoDB) {
-      const newUser = new User({
-        fullName: data.fullName.trim(),
-        email: normalizedEmail,
-        passwordHash: data.passwordHash,
-        role: data.role || 'user',
-        membershipStatus: 'none',
-        membershipMode: 'none',
-        membershipPlan: data.membershipPlan || null,
-        selectedCharity: data.selectedCharity || 'youth-golf',
-        charityContributionPercentage: data.charityContributionPercentage || 10,
-        paymentStatus: 'none',
-      });
-      return newUser.save();
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const newUser = new User({
+          fullName: data.fullName.trim(),
+          email: normalizedEmail,
+          passwordHash: data.passwordHash,
+          role: data.role || 'user',
+          membershipStatus: 'none',
+          membershipMode: 'none',
+          membershipPlan: data.membershipPlan || null,
+          selectedCharity: data.selectedCharity || 'youth-golf',
+          charityContributionPercentage: data.charityContributionPercentage || 10,
+          paymentStatus: 'none',
+        });
+        const saved = await newUser.save();
+        memoryUsers.set(normalizedEmail, saved);
+        return saved;
+      } catch (err) {
+        console.warn('⚠️ [userStore.create] Mongoose save error, saving to memory fallback:', err);
+      }
     }
 
     // In-memory simulated document
@@ -197,7 +214,7 @@ export const userStore = {
       fieldsToUpdate.charityContributionPercentage = update.charityContributionPercentage;
     }
 
-    if (isConnectedToMongoDB && mongoose.Types.ObjectId.isValid(userId)) {
+    if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(userId)) {
       return User.findByIdAndUpdate(userId, fieldsToUpdate, { new: true });
     }
 
@@ -247,7 +264,7 @@ export const userStore = {
       fieldsToUpdate.charityContributionPercentage = details.charityContributionPercentage;
     }
 
-    if (isConnectedToMongoDB && mongoose.Types.ObjectId.isValid(userId)) {
+    if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(userId)) {
       return User.findByIdAndUpdate(userId, fieldsToUpdate, { new: true });
     }
 
@@ -269,7 +286,7 @@ export const userStore = {
       charityContributionPercentage: Math.min(100, Math.max(10, charityContributionPercentage)),
     };
 
-    if (isConnectedToMongoDB && mongoose.Types.ObjectId.isValid(userId)) {
+    if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(userId)) {
       return User.findByIdAndUpdate(userId, fieldsToUpdate, { new: true });
     }
 

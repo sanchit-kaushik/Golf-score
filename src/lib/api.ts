@@ -1,7 +1,28 @@
-const isProduction = import.meta.env.PROD;
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  (isProduction ? 'https://golf-score-1-pn0b.onrender.com' : 'http://localhost:5001');
+const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  const isBrowser = typeof window !== 'undefined';
+  const isLocalHostDomain =
+    isBrowser &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '::1');
+
+  // If running in browser on remote domain (Vercel, custom domain), strictly use Render backend
+  if (isBrowser && !isLocalHostDomain) {
+    if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+      return envUrl;
+    }
+    return 'https://golf-score-1-pn0b.onrender.com';
+  }
+
+  // Local development
+  if (envUrl) return envUrl;
+  return import.meta.env.PROD
+    ? 'https://golf-score-1-pn0b.onrender.com'
+    : 'http://localhost:5001';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const TOKEN_KEY = 'dh_auth_jwt_token';
 
@@ -699,6 +720,10 @@ export const api = {
         success: boolean;
         winningNumbers: number[];
         cycle: any;
+        drawCycle?: any;
+        matchingParticipants?: any[];
+        tierAllocations?: any;
+        totalParticipants?: number;
       }>('/api/admin/draws/generate-numbers', { method: 'POST' });
     },
 
@@ -706,6 +731,7 @@ export const api = {
       return request<{
         success: boolean;
         cycle: any;
+        drawCycle?: any;
       }>('/api/admin/draws/lock', { method: 'POST' });
     },
 
@@ -713,6 +739,7 @@ export const api = {
       return request<{
         success: boolean;
         cycle: any;
+        drawCycle?: any;
       }>('/api/admin/draws/open', { method: 'POST' });
     },
 
@@ -725,6 +752,7 @@ export const api = {
         message?: string;
         executedAt: string;
         winningNumbers: number[];
+        cycle?: any;
         drawCycle: any;
         tierAllocations: {
           '5-match': {
@@ -774,8 +802,13 @@ export const api = {
     publishDraw: async (winningNumbers?: number[]) => {
       return request<{
         success: boolean;
-        cycle: any;
-        summary: any;
+        cycle?: any;
+        drawCycle?: any;
+        winningNumbers?: number[];
+        matchingParticipants?: any[];
+        tierAllocations?: any;
+        totalParticipants?: number;
+        summary?: any;
       }>('/api/admin/draws/execute', {
         method: 'POST',
         body: JSON.stringify({ winningNumbers }),

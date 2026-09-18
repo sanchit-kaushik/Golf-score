@@ -13,6 +13,7 @@ export const scoreRoutes = Router();
 scoreRoutes.use(requireAuth);
 
 scoreRoutes.get('/', getMyScores);
+scoreRoutes.get('/my-scores', getMyScores);
 scoreRoutes.post('/', addScore);
 scoreRoutes.put('/:id', updateScore);
 scoreRoutes.delete('/:id', deleteScore);

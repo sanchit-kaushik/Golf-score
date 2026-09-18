@@ -11,47 +11,43 @@ import { scoreRoutes } from './routes/scoreRoutes.js';
 import { donationRoutes } from './routes/donationRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
-import { isConnectedToMongoDB } from './config/db.js';
+import { isConnectedToMongoDB, ensureDbConnected } from './config/db.js';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
 export const app = express();
 
-const clientOrigin = process.env.CLIENT_URL || 'http://localhost:5174';
-
-// CORS Configuration
+// CORS Configuration - Permissive for Vercel, localhost, and custom domains with credentials
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, Postman)
-      if (!origin) return callback(null, true);
-      // Allow clientOrigin and localhost variations
-      if (
-        origin === clientOrigin ||
-        origin.startsWith('http://localhost:') ||
-        origin.startsWith('http://127.0.0.1:') ||
-        origin.endsWith('.vercel.app') ||
-        origin.includes('vercel.app')
-      ) {
-        return callback(null, true);
-      }
-      return callback(null, true); // Dev convenience
-    },
+    origin: true, // Dynamically reflects request origin and allows credentials
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['Set-Cookie'],
   })
 );
 
 app.use(express.json());
 app.use(cookieParser());
 
+// Connection gate: await in-flight connection before routing Mongoose requests
+app.use(async (_req, _res, next) => {
+  if (mongoose.connection.readyState === 2) {
+    await ensureDbConnected().catch(() => {});
+  }
+  next();
+});
+
 // Health Check
 app.get('/api/health', (_req, res) => {
+  const dbConnected = mongoose.connection.readyState === 1 || isConnectedToMongoDB;
   res.status(200).json({
     status: 'ok',
-    service: 'digital-heroes-backend',
-    database: isConnectedToMongoDB ? 'connected (Atlas)' : 'disconnected (set MONGODB_URI)',
+    service: 'golf-hero-backend',
+    database: dbConnected ? 'connected (Atlas)' : 'fallback mode',
+    readyState: mongoose.connection.readyState,
     timestamp: new Date().toISOString(),
   });
 });

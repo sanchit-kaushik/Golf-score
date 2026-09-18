@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Sparkles,
   RefreshCw,
-  Loader2,
   CheckCircle2,
   AlertCircle,
   AlertTriangle,
@@ -10,6 +9,9 @@ import {
   Trophy,
   Users,
   Award,
+  Lock,
+  Unlock,
+  Play,
 } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { api } from '../../lib/api';
@@ -127,6 +129,107 @@ export const AdminDraws: React.FC = () => {
       }
     } catch (err: any) {
       setErrorMsg(err?.message || 'Failed to execute draw.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleGenerateWinningNumbers = async () => {
+    try {
+      setActionLoading(true);
+      setErrorMsg(null);
+      const res = await api.admin.generateWinningNumbers();
+      if (res.success) {
+        if (res.winningNumbers) {
+          setCycle((prev: any) => ({
+            ...prev,
+            ...(res.cycle || res.drawCycle || {}),
+            winningNumbers: res.winningNumbers,
+          }));
+        }
+        if (res.matchingParticipants) {
+          setMatchingParticipants(res.matchingParticipants);
+        }
+        if (res.tierAllocations) {
+          setTierAllocations(res.tierAllocations as any);
+        }
+        if (res.totalParticipants !== undefined) {
+          setTotalParticipants(res.totalParticipants);
+        }
+        setSuccessMsg(
+          `Generated 5 independent winning numbers: ${res.winningNumbers.map((n: number) => n.toString().padStart(2, '0')).join(' ')}`
+        );
+        fetchCurrentDraw();
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Failed to generate numbers.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleLockDraw = async () => {
+    try {
+      setActionLoading(true);
+      setErrorMsg(null);
+      const res = await api.admin.lockDraw();
+      if (res.success) {
+        setCycle((prev: any) => ({ ...prev, status: 'locked' }));
+        setSuccessMsg('Draw has been LOCKED. No further lucky number selections allowed.');
+        fetchCurrentDraw();
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Failed to lock draw.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleOpenDraw = async () => {
+    try {
+      setActionLoading(true);
+      setErrorMsg(null);
+      const res = await api.admin.openDraw();
+      if (res.success) {
+        setCycle((prev: any) => ({ ...prev, status: 'open' }));
+        setSuccessMsg('Draw cycle is now OPEN for member number entries.');
+        fetchCurrentDraw();
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Failed to open draw.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePublishResults = async () => {
+    try {
+      setActionLoading(true);
+      setErrorMsg(null);
+      const res = await api.admin.publishDraw();
+      if (res.success) {
+        if (res.drawCycle) setCycle(res.drawCycle);
+        if (res.winningNumbers) {
+          setCycle((prev: any) => ({
+            ...prev,
+            ...res.drawCycle,
+            winningNumbers: res.winningNumbers,
+          }));
+        }
+        if (res.matchingParticipants) {
+          setMatchingParticipants(res.matchingParticipants);
+        }
+        if (res.tierAllocations) {
+          setTierAllocations(res.tierAllocations as any);
+        }
+        if (res.totalParticipants !== undefined) {
+          setTotalParticipants(res.totalParticipants);
+        }
+        setSuccessMsg('Results published successfully! Winners evaluated and prizes awarded.');
+        fetchCurrentDraw();
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Failed to publish draw results.');
     } finally {
       setActionLoading(false);
     }
@@ -305,30 +408,70 @@ export const AdminDraws: React.FC = () => {
               </div>
             )}
 
-            {/* Main Action Button */}
-            <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-stone-200">
-              <span className="text-[11px] text-stone-500 italic">
-                * Click triggers Demo Mode confirmation before executing.
-              </span>
+            {/* Draw Action Buttons */}
+            <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* 1. GENERATE DRAW */}
+                <button
+                  onClick={handleGenerateWinningNumbers}
+                  disabled={actionLoading}
+                  className="px-4 py-2.5 rounded-xl bg-[#2C4C38] hover:bg-[#1B3022] text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shadow-sm border border-[#2C4C38] cursor-pointer disabled:opacity-50 active:scale-98"
+                  title="Generate 5 independent winning numbers and match member entries"
+                >
+                  <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                  <span>GENERATE DRAW</span>
+                </button>
 
+                {/* 2. LOCK DRAW / OPEN DRAW */}
+                {cycle?.status === 'open' ? (
+                  <button
+                    onClick={handleLockDraw}
+                    disabled={actionLoading}
+                    className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 active:scale-98"
+                    title="Lock the draw cycle to prevent further lucky number modifications"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>LOCK DRAW</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleOpenDraw}
+                    disabled={actionLoading}
+                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 active:scale-98"
+                    title="Open the draw cycle for member lucky number submissions"
+                  >
+                    <Unlock className="w-4 h-4" />
+                    <span>OPEN DRAW</span>
+                  </button>
+                )}
+
+                {/* 3. PUBLISH RESULTS */}
+                <button
+                  onClick={handlePublishResults}
+                  disabled={actionLoading}
+                  className="px-4 py-2.5 rounded-xl bg-[#1B3022] hover:bg-[#2C4C38] text-[#D4AF37] font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shadow-sm border border-[#D4AF37]/50 cursor-pointer disabled:opacity-50 active:scale-98"
+                  title="Evaluate participants, assign prize tiers, and publish official results"
+                >
+                  <Play className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
+                  <span>PUBLISH RESULTS</span>
+                </button>
+              </div>
+
+              {/* Demo Evaluation Mode Button */}
               <button
                 onClick={handleOpenDemoModal}
                 disabled={actionLoading}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#1B3022] to-[#2C4C38] hover:from-[#2C4C38] hover:to-[#1B3022] text-[#D4AF37] font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2.5 shadow-md active:scale-98 border border-[#D4AF37]/40 cursor-pointer disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 active:scale-98 self-start sm:self-auto"
+                title="Run repeatable simulated draw with evaluation modal"
               >
-                {actionLoading ? (
+                {hasDrawn ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-[#D4AF37]" />
-                    <span>Evaluating Draw & Matching Members...</span>
-                  </>
-                ) : hasDrawn ? (
-                  <>
-                    <RotateCcw className="w-4 h-4 text-[#D4AF37]" />
-                    <span>RUN DRAW AGAIN</span>
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                    <span>RUN DEMO AGAIN</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
                     <span>SIMULATE DRAW</span>
                   </>
                 )}

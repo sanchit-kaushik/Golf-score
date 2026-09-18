@@ -74,7 +74,7 @@ export const DEFAULT_PARTICIPANTS = [
 export const inMemoryDrawState: {
   winningNumbers: number[];
   drawnAt: Date | null;
-  status: 'open' | 'published';
+  status: 'open' | 'published' | 'locked';
   demoRunCount: number;
   jackpotRollover: boolean;
   jackpotAmount: number;
@@ -117,6 +117,15 @@ export const getActiveDrawCycle = async (): Promise<IDrawCycle> => {
       publishedAt: inMemoryDrawState.drawnAt || new Date(),
       demoRunCount: inMemoryDrawState.demoRunCount,
       isDemo: true,
+      async save() {
+        inMemoryDrawState.status = this.status;
+        inMemoryDrawState.winningNumbers = this.winningNumbers;
+        inMemoryDrawState.demoRunCount = this.demoRunCount;
+        inMemoryDrawState.jackpotRollover = this.jackpotRollover;
+        inMemoryDrawState.jackpotAmount = this.jackpotAmount;
+        inMemoryDrawState.drawnAt = this.drawnAt;
+        return this;
+      },
     } as any;
   }
 
@@ -897,7 +906,16 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
       // Reset to base 40%
       cycle.jackpotAmount = cycle.prizePool * 0.4;
     }
-    await cycle.save();
+    if (typeof (cycle as any).save === 'function') {
+      await cycle.save();
+    } else {
+      inMemoryDrawState.winningNumbers = winningNumbers;
+      inMemoryDrawState.status = cycle.status as any;
+      inMemoryDrawState.demoRunCount = cycle.demoRunCount || 0;
+      inMemoryDrawState.jackpotRollover = cycle.jackpotRollover;
+      inMemoryDrawState.jackpotAmount = cycle.jackpotAmount;
+      inMemoryDrawState.drawnAt = cycle.drawnAt;
+    }
 
     res.status(200).json({
       success: true,
@@ -1248,12 +1266,17 @@ export const adminLockDraw = async (_req: Request, res: Response): Promise<void>
   try {
     const cycle = await getActiveDrawCycle();
     cycle.status = 'locked';
-    await cycle.save();
+    if (typeof (cycle as any).save === 'function') {
+      await cycle.save();
+    } else {
+      inMemoryDrawState.status = 'locked';
+    }
 
     res.status(200).json({
       success: true,
       message: 'Draw is now LOCKED. No further lucky number selections allowed.',
       cycle,
+      drawCycle: cycle,
     });
   } catch (error: any) {
     console.error('Error locking draw:', error);
@@ -1269,12 +1292,17 @@ export const adminOpenDraw = async (_req: Request, res: Response): Promise<void>
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 15);
     cycle.lockDate = futureDate;
-    await cycle.save();
+    if (typeof (cycle as any).save === 'function') {
+      await cycle.save();
+    } else {
+      inMemoryDrawState.status = 'open';
+    }
 
     res.status(200).json({
       success: true,
       message: 'Draw cycle is now OPEN for lucky number submissions.',
       cycle,
+      drawCycle: cycle,
     });
   } catch (error: any) {
     console.error('Error opening draw:', error);
