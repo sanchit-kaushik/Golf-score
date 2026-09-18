@@ -450,35 +450,14 @@ export const runDemoDraw = async (req: Request, res: Response): Promise<void> =>
 
 /**
  * POST /api/admin/draws/generate-numbers
- * Generates independent winning numbers for the current cycle.
+ * Generates exactly 5 unique numbers (1-99) for the current September 2026 draw,
+ * saves them to the draw document, re-evaluates all user Lucky Numbers against them,
+ * and returns the winning numbers and updated cycle.
  */
-export const generateWinningNumbers = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const currentCycle = await DrawCycle.findOne({ status: { $in: ['open', 'locked'] } }).sort({ createdAt: -1 });
-    if (!currentCycle) {
-      res.status(400).json({ success: false, error: 'No active draw cycle found to generate numbers for.' });
-      return;
-    }
-
-    const numbersSet = new Set<number>();
-    while (numbersSet.size < 5) {
-      numbersSet.add(crypto.randomInt(1, 100));
-    }
-    const generated = Array.from(numbersSet).sort((a, b) => a - b);
-
-    currentCycle.winningNumbers = generated;
-    await currentCycle.save();
-
-    res.status(200).json({
-      success: true,
-      winningNumbers: generated,
-      cycle: currentCycle,
-    });
-  } catch (error: any) {
-    console.error('Error generating winning numbers:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate winning numbers.' });
-  }
+export const generateWinningNumbers = async (req: Request, res: Response): Promise<void> => {
+  return executeDraw(req, res);
 };
+
 
 /**
  * GET /api/admin/reports
