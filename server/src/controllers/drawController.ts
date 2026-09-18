@@ -28,6 +28,23 @@ export const getActiveDrawCycle = async (): Promise<IDrawCycle> => {
   const currentMonth = monthNames[now.getMonth()];
   const currentYear = now.getFullYear();
 
+  if (mongoose.connection.readyState !== 1) {
+    return {
+      _id: new mongoose.Types.ObjectId('600000000000000000000001'),
+      name: `${currentMonth} ${currentYear} Monthly Draw`,
+      month: currentMonth,
+      year: currentYear,
+      status: 'open',
+      drawMethod: 'random',
+      winningNumbers: [7, 18, 42, 63, 94],
+      prizePool: 100000,
+      jackpotRollover: true,
+      jackpotAmount: 40000,
+      lockDate: new Date(Date.now() + 12 * 86400000),
+      publishedAt: new Date(),
+    } as any;
+  }
+
   let cycle = await DrawCycle.findOne({
     $or: [
       { status: 'open' },
