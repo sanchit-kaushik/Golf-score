@@ -4,11 +4,15 @@ dotenv.config();
 import { app } from './app.js';
 import { connectDB } from './config/db.js';
 import { seedInitialData } from './utils/seedData.js';
+import { seedAdminInMemory } from './utils/userStore.js';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5001;
 
 const startServer = async () => {
   console.log('🚀 [Golf-Hero Backend] Initializing server...');
+
+  // Always seed admin test account in fallback memory store
+  await seedAdminInMemory();
 
   // Connect to MongoDB Atlas
   const connected = await connectDB();

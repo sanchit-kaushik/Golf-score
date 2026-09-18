@@ -176,3 +176,36 @@ export const logout = async (_req: Request, res: Response): Promise<void> => {
     });
   }
 };
+
+/**
+ * Idempotent Admin Account Seed Endpoint
+ * Can be called via GET or POST to ensure the admin test account
+ * exists and has the correct bcrypt password hash and admin role.
+ */
+export const seedAdmin = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const { seedAdminAccount } = await import('../utils/seedData.js');
+    const { seedAdminInMemory } = await import('../utils/userStore.js');
+
+    await seedAdminInMemory();
+    const result = await seedAdminAccount();
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      action: result.action,
+      account: {
+        email: 'admin@digitalheroes.test',
+        role: 'admin',
+        passwordConfig: 'Admin@12345 (bcrypt encrypted)',
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: 'Failed to seed admin account',
+      details: error?.message || error,
+    });
+  }
+};
+

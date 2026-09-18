@@ -95,31 +95,77 @@ export const seedInitialData = async (): Promise<void> => {
     }
 
     // 3. Seed Seeded Admin Test Account
-    const adminEmail = 'admin@digitalheroes.test';
-    const existingAdmin = await User.findOne({ email: adminEmail });
-    if (!existingAdmin) {
-      console.log('🌱 [Seeder] Seeding admin test account (admin@digitalheroes.test)...');
-      const salt = await bcrypt.genSalt(12);
-      const passwordHash = await bcrypt.hash('Admin@12345', salt);
-      await User.create({
-        fullName: 'Golf-Hero Admin',
-        email: adminEmail,
-        passwordHash,
-        role: 'admin',
-        membershipStatus: 'active',
-        membershipMode: 'real',
-        membershipPlan: 'yearly',
-        paymentStatus: 'paid',
-        charityContributionPercentage: 10,
-        selectedCharity: 'youth-golf',
-      });
-      console.log('✅ [Seeder] Seeded admin test account with role=admin.');
-    } else if (existingAdmin.role !== 'admin') {
-      existingAdmin.role = 'admin';
-      await existingAdmin.save();
-      console.log('✅ [Seeder] Updated existing admin account to role=admin.');
-    }
+    await seedAdminAccount();
   } catch (err: any) {
     console.error('⚠️ [Seeder] Error checking or seeding initial data:', err?.message || err);
   }
+};
+
+/**
+ * Idempotent Admin Account Seeder
+ * Ensures exactly one admin test account exists with email 'admin@digitalheroes.test'
+ * and password 'Admin@12345'. Safely hashes password via bcrypt.
+ */
+export const seedAdminAccount = async (): Promise<{ success: boolean; message: string; action: string }> => {
+  const adminEmail = 'admin@digitalheroes.test';
+  const plainPassword = 'Admin@12345';
+  const salt = await bcrypt.genSalt(12);
+  const passwordHash = await bcrypt.hash(plainPassword, salt);
+
+  const existingAdmin = await User.findOne({ email: adminEmail });
+
+  if (!existingAdmin) {
+    console.log(`🌱 [Seeder] Creating admin test account (${adminEmail})...`);
+    await User.create({
+      fullName: 'Golf-Hero Admin',
+      email: adminEmail,
+      passwordHash,
+      role: 'admin',
+      membershipStatus: 'active',
+      membershipMode: 'real',
+      membershipPlan: 'yearly',
+      paymentStatus: 'paid',
+      charityContributionPercentage: 10,
+      selectedCharity: 'youth-golf',
+    });
+    console.log(`✅ [Seeder] Admin test account created successfully.`);
+    return { success: true, message: `Admin test account created (${adminEmail})`, action: 'created' };
+  }
+
+  // Admin exists -> verify password hash and role
+  let needsSave = false;
+  const isPasswordMatch = await bcrypt.compare(plainPassword, existingAdmin.passwordHash || '');
+
+  if (!isPasswordMatch) {
+    console.log(`🔄 [Seeder] Updating password hash for ${adminEmail} to match Admin@12345...`);
+    existingAdmin.passwordHash = passwordHash;
+    needsSave = true;
+  }
+
+  if (existingAdmin.role !== 'admin') {
+    console.log(`🔄 [Seeder] Promoting ${adminEmail} to role="admin"...`);
+    existingAdmin.role = 'admin';
+    needsSave = true;
+  }
+
+  if (existingAdmin.membershipStatus !== 'active') {
+    existingAdmin.membershipStatus = 'active';
+    existingAdmin.membershipMode = 'real';
+    existingAdmin.paymentStatus = 'paid';
+    needsSave = true;
+  }
+
+  if (existingAdmin.fullName !== 'Golf-Hero Admin') {
+    existingAdmin.fullName = 'Golf-Hero Admin';
+    needsSave = true;
+  }
+
+  if (needsSave) {
+    await existingAdmin.save();
+    console.log(`✅ [Seeder] Admin test account updated and verified with role=admin.`);
+    return { success: true, message: `Admin test account updated (${adminEmail})`, action: 'updated' };
+  }
+
+  console.log(`✅ [Seeder] Admin test account is verified and ready (${adminEmail}).`);
+  return { success: true, message: `Admin test account already verified and active (${adminEmail})`, action: 'verified' };
 };
