@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Charity } from '../models/Charity.js';
 import { DrawCycle } from '../models/DrawCycle.js';
 import { User } from '../models/User.js';
@@ -5,6 +6,11 @@ import bcrypt from 'bcryptjs';
 
 export const seedInitialData = async (): Promise<void> => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      console.log('ℹ️ [Seeder] MongoDB Atlas not connected; skipping initial data seeding.');
+      return;
+    }
+
     // 1. Seed Initial Charities if empty
     const charityCount = await Charity.countDocuments();
     if (charityCount === 0) {
@@ -109,6 +115,16 @@ export const seedInitialData = async (): Promise<void> => {
 export const seedAdminAccount = async (): Promise<{ success: boolean; message: string; action: string }> => {
   const adminEmail = 'admin@digitalheroes.test';
   const plainPassword = 'Admin@12345';
+
+  if (mongoose.connection.readyState !== 1) {
+    console.log(`ℹ️ [Seeder] MongoDB Atlas not connected; in-memory fallback admin active for ${adminEmail}.`);
+    return {
+      success: true,
+      message: `MongoDB Atlas not connected; in-memory fallback admin active for ${adminEmail}`,
+      action: 'in_memory',
+    };
+  }
+
   const salt = await bcrypt.genSalt(12);
   const passwordHash = await bcrypt.hash(plainPassword, salt);
 
