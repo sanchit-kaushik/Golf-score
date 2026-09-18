@@ -329,7 +329,7 @@ export const AdminDraws: React.FC = () => {
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-                    <span>RUN DRAW</span>
+                    <span>SIMULATE DRAW</span>
                   </>
                 )}
               </button>
@@ -624,14 +624,14 @@ export const AdminDraws: React.FC = () => {
                   ⚠️ DEMO MODE
                 </h3>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  This draw is being run in Demo Mode for project evaluation.
-                  Demo draws can be repeated multiple times and do not represent the official production schedule.
+                  This draw is being executed in DEMO MODE for project demonstration.
+                  Demo draws can be performed multiple times and do not represent the official monthly draw.
                 </p>
                 <p className="text-xs text-stone-600 leading-relaxed">
-                  In the real production system, the official Lucky Draw is conducted <strong>once per month</strong>.
+                  In the real production system, the official Lucky Draw is conducted only once per month.
                 </p>
                 <p className="text-xs font-semibold text-stone-800 pt-1">
-                  Continue?
+                  Continue with Demo Draw?
                 </p>
               </div>
 
@@ -648,7 +648,7 @@ export const AdminDraws: React.FC = () => {
                   onClick={handleConfirmDraw}
                   className="flex-1 py-2.5 px-4 rounded-xl bg-[#1B3022] hover:bg-[#2C4C38] text-[#D4AF37] font-bold text-xs uppercase tracking-wider transition-colors shadow-sm cursor-pointer"
                 >
-                  RUN DRAW
+                  RUN DEMO DRAW
                 </button>
               </div>
             </div>

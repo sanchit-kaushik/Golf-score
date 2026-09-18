@@ -428,47 +428,14 @@ export const markAdminWinnerPayout = async (req: Request, res: Response): Promis
 
 /**
  * POST /api/admin/draws/simulate
- * Simulates generating 5 unique numbers (1-99) without modifying real DB data.
+ * Executes the unified Monthly Draw in Demo / Simulation Mode.
+ * Generates 5 unique numbers (1-99), matches against active participants,
+ * calculates 3/4/5 match tiers and returns real-time results.
  */
-export const simulateDraw = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const numbersSet = new Set<number>();
-    while (numbersSet.size < 5) {
-      numbersSet.add(crypto.randomInt(1, 100));
-    }
-    const simulatedNumbers = Array.from(numbersSet).sort((a, b) => a - b);
-
-    // Compute preview against current cycle's entries
-    const currentCycle = await DrawCycle.findOne({ status: { $in: ['open', 'locked'] } }).sort({ createdAt: -1 });
-    let previewStats = {
-      match5: 0,
-      match4: 0,
-      match3: 0,
-      entriesCount: 0,
-    };
-
-    if (currentCycle) {
-      const entries = await LuckyNumberEntry.find({ drawCycleId: currentCycle._id });
-      previewStats.entriesCount = entries.length;
-      entries.forEach((e) => {
-        const matches = e.numbers.filter((n) => simulatedNumbers.includes(n)).length;
-        if (matches === 5) previewStats.match5++;
-        else if (matches === 4) previewStats.match4++;
-        else if (matches === 3) previewStats.match3++;
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      simulatedNumbers,
-      previewStats,
-      message: 'Draw simulation generated successfully. Real draw remains unchanged.',
-    });
-  } catch (error: any) {
-    console.error('Error simulating draw:', error);
-    res.status(500).json({ success: false, error: 'Failed to simulate draw.' });
-  }
+export const simulateDraw = async (req: Request, res: Response): Promise<void> => {
+  return executeDraw(req, res);
 };
+
 
 /**
  * POST /api/admin/draws/demo-draw

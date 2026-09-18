@@ -5,6 +5,7 @@ import { DrawCycle, IDrawCycle } from '../models/DrawCycle.js';
 import { LuckyNumberEntry } from '../models/LuckyNumberEntry.js';
 import { DrawResult } from '../models/DrawResult.js';
 import { WinnerVerification } from '../models/WinnerVerification.js';
+import { User } from '../models/User.js';
 import { userStore } from '../utils/userStore.js';
 import { AuthenticatedRequest } from '../middleware/authMiddleware.js';
 
@@ -16,6 +17,78 @@ export const generateIndependentWinningNumbers = (): number[] => {
     numbers.add(rand);
   }
   return Array.from(numbers).sort((a, b) => a - b);
+};
+
+// In-memory fallback participants for draw evaluation
+export const DEFAULT_PARTICIPANTS = [
+  {
+    userId: '6aac250fbae709474df70ec9',
+    userName: 'Golf-Hero Admin',
+    userEmail: 'admin@digitalheroes.test',
+    luckyNumbers: [7, 28, 46, 71, 94],
+  },
+  {
+    userId: '6aac1e4e84a8fd9d1e697672',
+    userName: 'Alice Golfer',
+    userEmail: 'alice.golfer@example.com',
+    luckyNumbers: [7, 28, 46, 71, 94],
+  },
+  {
+    userId: '6aac1e4f84a8fd9d1e697675',
+    userName: 'Bob Golfer',
+    userEmail: 'bob.golfer@example.com',
+    luckyNumbers: [7, 28, 42, 71, 94],
+  },
+  {
+    userId: '6aabec3314a31a1df67c19ea',
+    userName: 'Sanchit',
+    userEmail: 'sanchitkaushik2365@gmail.com',
+    luckyNumbers: [7, 27, 46, 71, 94],
+  },
+  {
+    userId: '6aac1e4f84a8fd9d1e697678',
+    userName: 'Alice Walker',
+    userEmail: 'alice.walker@example.com',
+    luckyNumbers: [7, 28, 42, 71, 94],
+  },
+  {
+    userId: '6aac1e4f84a8fd9d1e697679',
+    userName: 'Bob Smith',
+    userEmail: 'bob.smith@example.com',
+    luckyNumbers: [7, 18, 42, 50, 94],
+  },
+  {
+    userId: '6aac1e4f84a8fd9d1e697680',
+    userName: 'Tiger Woods',
+    userEmail: 'tiger.woods@example.com',
+    luckyNumbers: [8, 21, 45, 67, 89],
+  },
+  {
+    userId: '6aac1e4f84a8fd9d1e697681',
+    userName: 'Meera Nair',
+    userEmail: 'meera.nair@example.com',
+    luckyNumbers: [7, 22, 46, 68, 94],
+  },
+];
+
+export const inMemoryDrawState: {
+  winningNumbers: number[];
+  drawnAt: Date | null;
+  status: 'open' | 'published';
+  demoRunCount: number;
+  jackpotRollover: boolean;
+  jackpotAmount: number;
+  prizePool: number;
+  results: any[];
+} = {
+  winningNumbers: [],
+  drawnAt: null,
+  status: 'open',
+  demoRunCount: 0,
+  jackpotRollover: true,
+  jackpotAmount: 40000,
+  prizePool: 100000,
+  results: [],
 };
 
 // Helper: Get or initialize the active monthly cycle
@@ -30,18 +103,20 @@ export const getActiveDrawCycle = async (): Promise<IDrawCycle> => {
 
   if (mongoose.connection.readyState !== 1) {
     return {
-      _id: new mongoose.Types.ObjectId('600000000000000000000001'),
+      _id: new mongoose.Types.ObjectId('6aac1d66bc3df26fc9872f56'),
       name: `${currentMonth} ${currentYear} Monthly Draw`,
       month: currentMonth,
       year: currentYear,
-      status: 'open',
+      status: inMemoryDrawState.status,
       drawMethod: 'random',
-      winningNumbers: [7, 18, 42, 63, 94],
-      prizePool: 100000,
-      jackpotRollover: true,
-      jackpotAmount: 40000,
-      lockDate: new Date(Date.now() + 12 * 86400000),
-      publishedAt: new Date(),
+      winningNumbers: inMemoryDrawState.winningNumbers,
+      prizePool: inMemoryDrawState.prizePool,
+      jackpotRollover: inMemoryDrawState.jackpotRollover,
+      jackpotAmount: inMemoryDrawState.jackpotAmount,
+      lockDate: new Date('2026-10-03T02:47:00.658Z'),
+      publishedAt: inMemoryDrawState.drawnAt || new Date(),
+      demoRunCount: inMemoryDrawState.demoRunCount,
+      isDemo: true,
     } as any;
   }
 
@@ -64,12 +139,14 @@ export const getActiveDrawCycle = async (): Promise<IDrawCycle> => {
       year: currentYear,
       status: 'open',
       drawMethod: 'random',
-      winningNumbers: [7, 18, 42, 63, 94],
+      winningNumbers: [],
       prizePool: 100000,
       jackpotRollover: true,
       jackpotAmount: 40000,
       lockDate,
       publishedAt: new Date(),
+      demoRunCount: 0,
+      isDemo: true,
     });
   }
 
@@ -82,6 +159,86 @@ export const getCurrentDraw = async (req: Request, res: Response): Promise<void>
     const cycle = await getActiveDrawCycle();
     const authReq = req as AuthenticatedRequest;
     const userId = authReq.user?.id || (authReq.user as any)?._id;
+
+    if (mongoose.connection.readyState !== 1) {
+      const isLocked = inMemoryDrawState.status === 'published';
+      const hasDrawn = inMemoryDrawState.winningNumbers.length === 5;
+      const count5 = inMemoryDrawState.results.filter((r: any) => r.matchCount === 5).length;
+      const count4 = inMemoryDrawState.results.filter((r: any) => r.matchCount === 4).length;
+      const count3 = inMemoryDrawState.results.filter((r: any) => r.matchCount === 3).length;
+
+      const pool5 =
+        inMemoryDrawState.prizePool * 0.4 +
+        (inMemoryDrawState.jackpotRollover ? inMemoryDrawState.jackpotAmount - inMemoryDrawState.prizePool * 0.4 : 0);
+      const pool4 = inMemoryDrawState.prizePool * 0.35;
+      const pool3 = inMemoryDrawState.prizePool * 0.25;
+
+      const tierAllocations = hasDrawn
+        ? {
+            '5-match': {
+              name: '5 Matches (Jackpot)',
+              percentage: '40%',
+              pool: pool5,
+              winners: count5,
+              perWinner: count5 > 0 ? Math.round(pool5 / count5) : 0,
+              rollover: inMemoryDrawState.jackpotRollover,
+            },
+            '4-match': {
+              name: '4 Matches',
+              percentage: '35%',
+              pool: pool4,
+              winners: count4,
+              perWinner: count4 > 0 ? Math.round(pool4 / count4) : 0,
+              rollover: false,
+            },
+            '3-match': {
+              name: '3 Matches',
+              percentage: '25%',
+              pool: pool3,
+              winners: count3,
+              perWinner: count3 > 0 ? Math.round(pool3 / count3) : 0,
+              rollover: false,
+            },
+          }
+        : null;
+
+      res.status(200).json({
+        success: true,
+        cycle: {
+          id: '6aac1d66bc3df26fc9872f56',
+          name: cycle.name,
+          month: cycle.month,
+          year: cycle.year,
+          status: inMemoryDrawState.status,
+          isLocked,
+          drawMethod: 'random',
+          winningNumbers: inMemoryDrawState.winningNumbers,
+          prizePool: inMemoryDrawState.prizePool,
+          jackpotRollover: inMemoryDrawState.jackpotRollover,
+          jackpotAmount: inMemoryDrawState.jackpotAmount,
+          isDemo: true,
+          demoRunCount: inMemoryDrawState.demoRunCount,
+          lockDate: cycle.lockDate,
+          drawnAt: inMemoryDrawState.drawnAt,
+          publishedAt: inMemoryDrawState.drawnAt,
+        },
+        totalParticipants:
+          inMemoryDrawState.results.length > 0 ? inMemoryDrawState.results.length : DEFAULT_PARTICIPANTS.length,
+        matchingParticipants: inMemoryDrawState.results,
+        tierAllocations,
+        isDemo: true,
+        demoRunNumber: inMemoryDrawState.demoRunCount || 1,
+        label: 'DEMO RESULT — NOT AN OFFICIAL PRODUCTION RESULT',
+        userEntry: {
+          id: 'entry_admin_001',
+          numbers: [7, 28, 46, 71, 94],
+          locked: true,
+          selectedAt: new Date().toISOString(),
+        },
+        userResult: null,
+      });
+      return;
+    }
 
     let userEntry = null;
     let userResult = null;
@@ -165,6 +322,7 @@ export const getCurrentDraw = async (req: Request, res: Response): Promise<void>
         };
       });
     }
+
 
     res.status(200).json({
       success: true,
@@ -401,7 +559,7 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
     const cycle = await getActiveDrawCycle();
 
     // 1. Generate 5 unique winning numbers from 1 to 99 (never copying user scores/lucky numbers)
-    const customNumbers = req.body.winningNumbers;
+    const customNumbers = req.body?.winningNumbers;
     let winningNumbers: number[];
 
     if (
@@ -413,6 +571,178 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
       winningNumbers = customNumbers.map(Number).sort((a: number, b: number) => a - b);
     } else {
       winningNumbers = generateIndependentWinningNumbers();
+    }
+
+    // A. Fallback mode if MongoDB is not connected
+    if (mongoose.connection.readyState !== 1) {
+      inMemoryDrawState.demoRunCount += 1;
+      inMemoryDrawState.winningNumbers = winningNumbers;
+      inMemoryDrawState.drawnAt = new Date();
+      inMemoryDrawState.status = 'published';
+
+      const tierWinners: { [tier: string]: typeof DEFAULT_PARTICIPANTS } = {
+        '5-match': [],
+        '4-match': [],
+        '3-match': [],
+        none: [],
+      };
+
+      const formattedParticipants = DEFAULT_PARTICIPANTS.map((p) => {
+        const matched = p.luckyNumbers.filter((n) => winningNumbers.includes(n));
+        const matchCount = matched.length;
+        let tier: '5-match' | '4-match' | '3-match' | 'none' = 'none';
+        if (matchCount === 5) tier = '5-match';
+        else if (matchCount === 4) tier = '4-match';
+        else if (matchCount === 3) tier = '3-match';
+
+        tierWinners[tier].push(p);
+
+        return {
+          userId: p.userId,
+          userName: p.userName,
+          userEmail: p.userEmail,
+          luckyNumbers: p.luckyNumbers,
+          matchedNumbers: matched,
+          matchCount,
+          tier,
+          prizeAmount: 0,
+          paymentStatus: 'NOT_WINNER',
+        };
+      });
+
+      const count5 = tierWinners['5-match'].length;
+      const count4 = tierWinners['4-match'].length;
+      const count3 = tierWinners['3-match'].length;
+
+      const pool5 =
+        inMemoryDrawState.prizePool * 0.4 +
+        (inMemoryDrawState.jackpotRollover ? inMemoryDrawState.jackpotAmount - inMemoryDrawState.prizePool * 0.4 : 0);
+      const pool4 = inMemoryDrawState.prizePool * 0.35;
+      const pool3 = inMemoryDrawState.prizePool * 0.25;
+
+      const prizePer5 = count5 > 0 ? Math.round(pool5 / count5) : 0;
+      const prizePer4 = count4 > 0 ? Math.round(pool4 / count4) : 0;
+      const prizePer3 = count3 > 0 ? Math.round(pool3 / count3) : 0;
+
+      const jackpotRolloverOccurred = count5 === 0;
+      inMemoryDrawState.jackpotRollover = jackpotRolloverOccurred;
+      if (jackpotRolloverOccurred) {
+        inMemoryDrawState.jackpotAmount = pool5;
+      } else {
+        inMemoryDrawState.jackpotAmount = inMemoryDrawState.prizePool * 0.4;
+      }
+
+      for (const p of formattedParticipants) {
+        if (p.tier === '5-match') {
+          p.prizeAmount = prizePer5;
+          p.paymentStatus = 'PENDING';
+        } else if (p.tier === '4-match') {
+          p.prizeAmount = prizePer4;
+          p.paymentStatus = 'PENDING';
+        } else if (p.tier === '3-match') {
+          p.prizeAmount = prizePer3;
+          p.paymentStatus = 'PENDING';
+        }
+      }
+
+      inMemoryDrawState.results = formattedParticipants;
+
+      res.status(200).json({
+        success: true,
+        isDemo: true,
+        demoRunNumber: inMemoryDrawState.demoRunCount,
+        label: 'DEMO RESULT — NOT AN OFFICIAL PRODUCTION RESULT',
+        message: `Monthly Draw executed successfully in Demo Mode (Run #${inMemoryDrawState.demoRunCount}). Results updated across ${DEFAULT_PARTICIPANTS.length} member entries.`,
+        executedAt: inMemoryDrawState.drawnAt.toISOString(),
+        winningNumbers,
+        simulatedNumbers: winningNumbers,
+        previewStats: {
+          match5: count5,
+          match4: count4,
+          match3: count3,
+          entriesCount: DEFAULT_PARTICIPANTS.length,
+        },
+        drawCycle: {
+          id: '6aac1d66bc3df26fc9872f56',
+          name: 'September 2026 Monthly Draw',
+          month: 'September',
+          year: 2026,
+          status: 'published',
+          winningNumbers,
+          prizePool: inMemoryDrawState.prizePool,
+          jackpotAmount: inMemoryDrawState.jackpotAmount,
+          jackpotRollover: inMemoryDrawState.jackpotRollover,
+          isDemo: true,
+          demoRunCount: inMemoryDrawState.demoRunCount,
+          drawnAt: inMemoryDrawState.drawnAt,
+          publishedAt: inMemoryDrawState.drawnAt,
+        },
+        tierAllocations: {
+          '5-match': {
+            name: '5 Matches (Jackpot)',
+            percentage: '40%',
+            pool: pool5,
+            winners: count5,
+            perWinner: prizePer5,
+            rollover: jackpotRolloverOccurred,
+          },
+          '4-match': {
+            name: '4 Matches',
+            percentage: '35%',
+            pool: pool4,
+            winners: count4,
+            perWinner: prizePer4,
+            rollover: false,
+          },
+          '3-match': {
+            name: '3 Matches',
+            percentage: '25%',
+            pool: pool3,
+            winners: count3,
+            perWinner: prizePer3,
+            rollover: false,
+          },
+        },
+        matchingParticipants: formattedParticipants,
+        totalParticipants: formattedParticipants.length,
+        notice: 'This draw was executed in DEMO MODE for project evaluation. Results are repeatable.',
+      });
+      return;
+    }
+
+    // B. MongoDB Connected execution
+    // 1. Ensure active users / admin have entries in DB
+    const adminUser = await User.findOne({ email: 'admin@digitalheroes.test' });
+    if (adminUser) {
+      await LuckyNumberEntry.findOneAndUpdate(
+        { userId: adminUser._id, drawCycleId: cycle._id },
+        {
+          numbers:
+            adminUser.luckyNumbers && adminUser.luckyNumbers.length === 5
+              ? adminUser.luckyNumbers
+              : [7, 28, 46, 71, 94],
+          locked: true,
+          lockedAt: new Date(),
+          selectedAt: new Date(),
+        },
+        { upsert: true, new: true }
+      );
+    }
+
+    const existingEntryCount = await LuckyNumberEntry.countDocuments({ drawCycleId: cycle._id });
+    if (existingEntryCount < 3) {
+      for (const p of DEFAULT_PARTICIPANTS) {
+        await LuckyNumberEntry.findOneAndUpdate(
+          { userId: p.userId, drawCycleId: cycle._id },
+          {
+            numbers: p.luckyNumbers,
+            locked: true,
+            lockedAt: new Date(),
+            selectedAt: new Date(),
+          },
+          { upsert: true, new: true }
+        );
+      }
     }
 
     // 2. Fetch all user entries for this cycle with user information
@@ -562,6 +892,13 @@ export const executeDraw = async (req: Request, res: Response): Promise<void> =>
       message: `Monthly Draw executed successfully in Demo Mode (Run #${cycle.demoRunCount}). Results updated across ${entries.length} member entries.`,
       executedAt: new Date().toISOString(),
       winningNumbers,
+      simulatedNumbers: winningNumbers,
+      previewStats: {
+        match5: count5,
+        match4: count4,
+        match3: count3,
+        entriesCount: entries.length,
+      },
       drawCycle: {
         id: cycle._id.toString(),
         name: cycle.name,
